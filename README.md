@@ -888,7 +888,7 @@ pnpm install
 
 ```env
 DISCORD_BOT_TOKEN=your_discord_bot_token
-MONGODB_URI=your_mongodb_uri
+MONGO_URL=your_MONGO_URL
 MONGODB_NAME=your_mongodb_name
 KV_TOKEN_ENCRYPTION_SECRET=your_256_bit_encryption_secret
 ```

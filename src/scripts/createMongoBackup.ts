@@ -23,7 +23,7 @@ async function createMongoBackup() {
 
   if (existsSync(backupPath)) throw new Error('Backup already exists for today.');
 
-  const cmd = generateBackupCommand(process.env.MONGODB_URI, backupPath, config.database.backup.exclude_collections);
+  const cmd = generateBackupCommand(process.env.MONGO_URL, backupPath, config.database.backup.exclude_collections);
 
   await promisifiedExec(cmd);
 

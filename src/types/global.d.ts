@@ -115,7 +115,7 @@ declare global {
     interface ProcessEnv {
       NODE_ENV: 'development' | 'production';
       DISCORD_BOT_TOKEN: string;
-      MONGODB_URI: string;
+      MONGO_URL: string;
       MONGODB_NAME: string;
       KV_TOKEN_ENCRYPTION_SECRET: string;
     }

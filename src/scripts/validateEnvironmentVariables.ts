@@ -1,6 +1,6 @@
 const envVars = {
   DISCORD_BOT_TOKEN: /[\w-]{24}\.[\w-]{6}\.[\w-]{38}/,
-  MONGODB_URI: /^mongodb:\/\/.+/,
+  MONGO_URL: /^mongodb:\/\/.+/,
   MONGODB_NAME: /^[\w-]+$/,
   KV_TOKEN_ENCRYPTION_SECRET: /^[\w]{64}$/,
   NODE_ENV: /^(development|production)$/

@@ -5,7 +5,7 @@ import createMongoBackup from '@/scripts/createMongoBackup';
 
 dns.setServers(['1.1.1.1']);
 
-mongoose.connect(process.env.MONGODB_URI, { dbName: process.env.MONGODB_NAME })
+mongoose.connect(process.env.MONGO_URL, { dbName: process.env.MONGODB_NAME })
   .then(() => {
     logger.log('database', 'Connected to database.');
 
