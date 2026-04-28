@@ -55,8 +55,10 @@ async function createServer() {
   app.use(notFoundHandler as express.RequestHandler);
   app.use(handleErrors as express.ErrorRequestHandler);
 
-  app.listen(config.server.port, () => {
-    logger.log('http', `Server is listening on port ${config.server.port}.`);
+  const host = process.env.HOST ?? process.env.BIND_HOST ?? '0.0.0.0';
+
+  app.listen(config.server.port, host, () => {
+    logger.log('http', `Server is listening on ${host}:${config.server.port}.`);
   });
 }
 
