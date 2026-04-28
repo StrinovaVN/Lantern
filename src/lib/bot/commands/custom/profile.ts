@@ -84,7 +84,7 @@ export default {
           if (value.length > 12) return interaction.error('Display name must not exceed 12 characters.');
 
           if (!storage.kv) storage.kv = new Map();
-          storage.kv.set('displayname', value);
+          storage.kv.set('name', value);
 
           const validationError = getValidationError(storage);
           if (validationError) return interaction.error(validationError);

@@ -7,7 +7,7 @@ import dedent from 'dedent';
 import type { CommandType } from '@/src/types';
 import getValidationError from '@/utils/getValidationError';
 
-const PROFILE_KEYS = ['avatar', 'banner', 'displayname'] as const;
+const PROFILE_KEYS = ['avatar', 'banner', 'name'] as const;
 
 function isCustomProfileKey(key: string) {
   return PROFILE_KEYS.includes(key as typeof PROFILE_KEYS[number]);
