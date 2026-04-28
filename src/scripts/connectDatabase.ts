@@ -1,9 +1,6 @@
 import mongoose from 'mongoose';
-import dns from 'node:dns/promises';
 import { CronJob } from 'cron';
 import createMongoBackup from '@/scripts/createMongoBackup';
-
-dns.setServers(['1.1.1.1']);
 
 mongoose.connect(process.env.MONGO_URL, { dbName: process.env.MONGODB_NAME })
   .then(() => {
