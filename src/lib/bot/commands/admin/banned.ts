@@ -3,8 +3,6 @@ import type { CommandType } from '@/src/types';
 import User from '@/models/User';
 import Storage from '@/models/Storage';
 
-const PROFILE_KEYS = ['avatar', 'banner', 'displayname'] as const;
-
 export default {
   metadata: {
     global: false
@@ -29,9 +27,7 @@ export default {
 
           const storage = await Storage.findOne({ userId: user.id });
           if (storage?.kv) {
-            for (const key of PROFILE_KEYS) storage.kv.delete(key);
-
-            if (!storage.kv.size) delete storage.kv;
+            delete storage.kv;
 
             await storage.save();
           }
@@ -42,7 +38,7 @@ export default {
             { upsert: true }
           );
 
-          return interaction.success(`\`${user.tag}\` can no longer customize their profile, and their custom values were reset.`);
+          return interaction.success(`\`${user.tag}\` can no longer customize their profile, and their storage was reset.`);
         }
       }
     }

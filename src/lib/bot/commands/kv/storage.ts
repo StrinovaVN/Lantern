@@ -13,6 +13,14 @@ function isCustomProfileKey(key: string) {
   return PROFILE_KEYS.includes(key as typeof PROFILE_KEYS[number]);
 }
 
+function canEditCustomProfile(user: { customProfileBanned?: boolean } | null, key: string) {
+  return !(user?.customProfileBanned && isCustomProfileKey(key));
+}
+
+function canUseStorage(user: { customProfileBanned?: boolean } | null) {
+  return !user?.customProfileBanned;
+}
+
 export default {
   metadata: {
     global: true
@@ -53,6 +61,7 @@ export default {
 
           const user = await User.findOne({ id: interaction.user.id });
           if (!user) return interaction.error('We could not find your user data. This generally means you are not in our Discord server.');
+          if (!canUseStorage(user)) return interaction.error('You are not allowed to use key-value storage.');
 
           const cryptoToken = crypto.randomBytes(16).toString('hex');
           const token = Buffer.from(`${interaction.user.id}:${cryptoToken}`).toString('base64');
@@ -80,6 +89,7 @@ export default {
           await interaction.deferReply({ ephemeral: !!interaction.guild });
 
           const user = await User.findOne({ id: interaction.user.id });
+          if (!canUseStorage(user)) return interaction.error('You are not allowed to use key-value storage.');
 
           const storage = await Storage.findOne({ userId: interaction.user.id });
           if (!storage) return interaction.error('We could not find your key-value storage data. Please create a storage first using `/storage create token`.');
@@ -87,10 +97,9 @@ export default {
           const key = interaction.options.getString('key', true);
           const value = interaction.options.getString('value', true);
 
-          if (user?.customProfileBanned && isCustomProfileKey(key)) return interaction.error('You are not allowed to customize your profile.');
+          if (!canEditCustomProfile(user, key)) return interaction.error('You are not allowed to customize your profile.');
 
           if (!storage.kv) storage.kv = new Map();
-
           storage.kv.set(key, value);
 
           const validationError = getValidationError(storage);
@@ -107,6 +116,9 @@ export default {
       execute: {
         command: async interaction => {
           await interaction.deferReply({ ephemeral: !!interaction.guild });
+
+          const user = await User.findOne({ id: interaction.user.id });
+          if (!canUseStorage(user)) return interaction.error('You are not allowed to use key-value storage.');
 
           const storage = await Storage.findOne({ userId: interaction.user.id });
           if (!storage) return interaction.error('We could not find your key-value storage data. Please create a storage first using `/storage create token`.');
@@ -129,6 +141,9 @@ export default {
         command: async interaction => {
           await interaction.deferReply({ ephemeral: !!interaction.guild });
 
+          const user = await User.findOne({ id: interaction.user.id });
+          if (!canUseStorage(user)) return interaction.error('You are not allowed to use key-value storage.');
+
           const storage = await Storage.findOne({ userId: interaction.user.id });
           if (!storage) return interaction.error('We could not find your key-value storage data. Please create a storage first using `/storage create token`.');
 
@@ -140,6 +155,9 @@ export default {
           return interaction.success(`Here is the data for the key \`${key}\`: \`${value}\``);
         },
         autocomplete: async interaction => {
+          const user = await User.findOne({ id: interaction.user.id });
+          if (!canUseStorage(user)) return [];
+
           const storage = await Storage.findOne({ userId: interaction.user.id });
           if (!storage || !storage.kv) return [];
 
@@ -156,6 +174,7 @@ export default {
           await interaction.deferReply({ ephemeral: !!interaction.guild });
 
           const user = await User.findOne({ id: interaction.user.id });
+          if (!canUseStorage(user)) return interaction.error('You are not allowed to use key-value storage.');
 
           const storage = await Storage.findOne({ userId: interaction.user.id });
           if (!storage) return interaction.error('We could not find your key-value storage data. Please create a storage first using `/storage create token`.');
@@ -163,7 +182,7 @@ export default {
           const key = interaction.options.getString('key', true);
           const value = interaction.options.getString('value', true);
 
-          if (user?.customProfileBanned && isCustomProfileKey(key)) return interaction.error('You are not allowed to customize your profile.');
+          if (!canEditCustomProfile(user, key)) return interaction.error('You are not allowed to customize your profile.');
 
           storage.kv?.set(key, value);
 
@@ -183,13 +202,14 @@ export default {
           await interaction.deferReply({ ephemeral: !!interaction.guild });
 
           const user = await User.findOne({ id: interaction.user.id });
+          if (!canUseStorage(user)) return interaction.error('You are not allowed to use key-value storage.');
 
           const storage = await Storage.findOne({ userId: interaction.user.id });
           if (!storage) return interaction.error('We could not find your key-value storage data. Please create a storage first using `/storage create token`.');
 
           const key = interaction.options.getString('key', true);
 
-          if (user?.customProfileBanned && isCustomProfileKey(key)) return interaction.error('You are not allowed to customize your profile.');
+          if (!canEditCustomProfile(user, key)) return interaction.error('You are not allowed to customize your profile.');
 
           storage.kv?.delete(key);
 
@@ -200,6 +220,9 @@ export default {
           return interaction.success(`Data for the key \`${key}\` deleted.`);
         },
         autocomplete: async interaction => {
+          const user = await User.findOne({ id: interaction.user.id });
+          if (!canUseStorage(user)) return [];
+
           const storage = await Storage.findOne({ userId: interaction.user.id });
           if (!storage?.kv) return [];
 
@@ -215,6 +238,9 @@ export default {
         command: async interaction => {
           await interaction.deferReply({ ephemeral: !!interaction.guild });
 
+          const user = await User.findOne({ id: interaction.user.id });
+          if (!canUseStorage(user)) return interaction.error('You are not allowed to use key-value storage.');
+
           const storage = await Storage.findOne({ userId: interaction.user.id });
           if (!storage) return interaction.error('We could not find your key-value storage data. Please create a storage first using `/storage create token`.');
 
@@ -224,16 +250,15 @@ export default {
             .map(([key, value]) => `"${key}": "${value.replace(/"/g, '\\"')}"`)
             .join(',\n  ');
 
-          // If the data is too long, send it as a file
           if (data.length > 1800) {
             const buffer = Buffer.from(`{\n  ${data}\n}`, 'utf-8');
 
             const attachment = new Discord.AttachmentBuilder(buffer, { name: 'kv-storage.json' });
 
             return interaction.followUp({ content: 'Here is the list of all the data in your key-value storage:', files: [attachment] });
-          } else {
-            return interaction.success(`Here is the list of all the data in your key-value storage:\n\`\`\`json\n{\n  ${data}\n}\n\`\`\``);
           }
+
+          return interaction.success(`Here is the list of all the data in your key-value storage:\n\`\`\`json\n{\n  ${data}\n}\n\`\`\``);
         }
       }
     },
@@ -242,6 +267,9 @@ export default {
       execute: {
         command: async interaction => {
           await interaction.deferReply({ ephemeral: !!interaction.guild });
+
+          const user = await User.findOne({ id: interaction.user.id });
+          if (!canUseStorage(user)) return interaction.error('You are not allowed to use key-value storage.');
 
           const storage = await Storage.findOne({ userId: interaction.user.id });
           if (!storage) return interaction.error('We could not find your key-value storage data. Please create a storage first using `/storage create token`.');
@@ -264,6 +292,9 @@ export default {
         },
         component: {
           'confirmResetStorage': async interaction => {
+            const user = await User.findOne({ id: interaction.user.id });
+            if (!canUseStorage(user)) return interaction.error('You are not allowed to use key-value storage.');
+
             const storage = await Storage.findOne({ userId: interaction.user.id });
             if (!storage) return interaction.error('We could not find your key-value storage data. Please create a storage first using `/storage create token`.');
 
