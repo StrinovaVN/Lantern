@@ -9,8 +9,8 @@ import '@/scripts/handleUncaughtExceptions';
 import createClient from '@/bot/createClient';
 
 async function main() {
-	await connectDatabase;
-	createClient();
+  await connectDatabase;
+  createClient();
 }
 
 main();

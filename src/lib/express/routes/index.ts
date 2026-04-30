@@ -9,7 +9,7 @@ export const get = [
       data: {
         info: `Hello! Navigator my name is ${client.user?.tag}`,
         discord: 'https://discord.gg/pfGHWWwcPT',
-        currently_monitoring_users: currentlyMonitoringUsers,
+        currently_monitoring_users: currentlyMonitoringUsers
       }
     });
   }
