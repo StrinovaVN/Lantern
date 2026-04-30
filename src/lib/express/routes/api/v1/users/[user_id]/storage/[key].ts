@@ -7,6 +7,10 @@ import getValidationError from '@/utils/getValidationError';
 import bodyParser from 'body-parser';
 import type { Request, Response } from 'express';
 import type { IncomingHttpHeaders } from 'node:http';
+import 'dotenv/config';
+
+const GUILD_ID = process.env.GUILD_ID;
+if (!GUILD_ID) throw new Error('GUILD_ID environment variable is not set.');
 
 interface PutRequestParams {
   user_id: string;
@@ -40,7 +44,7 @@ export const put = [
   async (request: Request<PutRequestParams, unknown, PutRequestBody, RequestHeaders>, response: Response) => {
     const { user_id, key, value } = matchedData(request);
 
-    const guild = client.guilds.cache.get(config.base_guild_id);
+    const guild = client.guilds.cache.get(GUILD_ID);
     if (!guild) return response.status(503).json({ error: 'Base guild is not available.' });
 
     const member = guild.members.cache.get(user_id);
@@ -94,7 +98,7 @@ export const get = [
   async (request: Request<GetRequestParams, unknown, unknown, RequestHeaders>, response: Response) => {
     const { user_id, key } = matchedData(request);
 
-    const guild = client.guilds.cache.get(config.base_guild_id);
+    const guild = client.guilds.cache.get(GUILD_ID);
     if (!guild) return response.status(503).json({ error: 'Base guild is not available.' });
 
     const member = guild.members.cache.get(user_id);
@@ -144,7 +148,7 @@ export const patch = [
   async (request: Request<PatchRequestParams, unknown, PatchRequestBody, RequestHeaders>, response: Response) => {
     const { user_id, key, value } = matchedData(request);
 
-    const guild = client.guilds.cache.get(config.base_guild_id);
+    const guild = client.guilds.cache.get(GUILD_ID);
     if (!guild) return response.status(503).json({ error: 'Base guild is not available.' });
 
     const member = guild.members.cache.get(user_id);
@@ -200,7 +204,7 @@ export const del = [
   async (request: Request<DeleteRequestParams, unknown, unknown, RequestHeaders>, response: Response) => {
     const { user_id, key } = matchedData(request);
 
-    const guild = client.guilds.cache.get(config.base_guild_id);
+    const guild = client.guilds.cache.get(GUILD_ID);
     if (!guild) return response.status(503).json({ error: 'Base guild is not available.' });
 
     const member = guild.members.cache.get(user_id);

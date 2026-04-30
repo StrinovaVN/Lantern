@@ -6,6 +6,7 @@ import createSvg from '@/express/routes/api/v1/users/[user_id]/createSvg';
 import Storage from '@/models/Storage';
 import type { Request, Response } from 'express';
 import type { APIUsersGETRequestQuery } from '@/src/types';
+import 'dotenv/config';
 
 interface RequestParams {
   user_id: string;
@@ -71,7 +72,10 @@ export const get = [
     const { user_id } = request.params;
     const { svg } = request.query;
 
-    const guild = client.guilds.cache.get(config.base_guild_id);
+    const GUILD_ID = process.env.GUILD_ID;
+    if (!GUILD_ID) return response.status(503).json({ error: 'Base guild is not available.' });
+
+    const guild = client.guilds.cache.get(GUILD_ID);
     if (!guild) return response.status(503).json({ error: 'Base guild is not available.' });
 
     const member = guild.members.cache.get(user_id);

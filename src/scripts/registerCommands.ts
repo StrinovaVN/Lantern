@@ -11,5 +11,11 @@ import getApplicationIdFromToken from '@/utils/bot/getApplicationIdFromToken';
 
 const commands = await fetchCommands();
 
-registerCommands({ token: process.env.DISCORD_BOT_TOKEN, commands, application_id: getApplicationIdFromToken(process.env.DISCORD_BOT_TOKEN), base_guild_id: config.base_guild_id })
+const guildId = process.env.GUILD_ID;
+if (!guildId) {
+  console.error('GUILD_ID environment variable is not set.');
+  process.exit(1);
+}
+
+registerCommands({ token: process.env.DISCORD_BOT_TOKEN, commands, application_id: getApplicationIdFromToken(process.env.DISCORD_BOT_TOKEN), base_guild_id: guildId })
   .then(() => process.exit(0));

@@ -1,10 +1,6 @@
 bypass_command_permissions_check = ['755650648397185104']
 
-base_guild_id = '1030094660628140083'
 max_bulk_get_users_size = 50
-
-[server]
-port = 8000
 
 [server.socket]
 heartbeat_interval = 30000

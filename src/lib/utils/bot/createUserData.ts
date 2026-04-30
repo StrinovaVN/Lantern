@@ -1,6 +1,7 @@
 import * as Discord from 'discord.js';
 import * as dateFns from 'date-fns';
 import type { UserData, ClientPresenceStatus, ClientPresenceStatusData } from '@/src/types';
+import 'dotenv/config';
 
 /**
  * Creates a user data object for a given user ID and key-value storage.
@@ -11,7 +12,10 @@ import type { UserData, ClientPresenceStatus, ClientPresenceStatusData } from '@
  * @throws {Error} If the base guild or member is not found.
  */
 function createUserData(user_id: string, kv: Map<string, string> | {}): UserData {
-  const guild = client.guilds.cache.get(config.base_guild_id);
+  const GUILD_ID = process.env.GUILD_ID;
+  if (!GUILD_ID) throw new Error('GUILD_ID environment variable is not set.');
+
+  const guild = client.guilds.cache.get(GUILD_ID);
   if (!guild) throw new Error('Base guild not found.');
 
   const member = guild.members.cache.get(user_id);
@@ -32,34 +36,37 @@ function createUserData(user_id: string, kv: Map<string, string> | {}): UserData
     const startTime = spotifyActivity.timestamps?.start || new Date();
     const endTime = spotifyActivity.timestamps?.end || new Date();
 
-    const elapsedTime = dateFns.differenceInSeconds(currentTime, startTime);
+    const elapsedTime = dateFns.differenceInSeconds(currentTime, startTime as Date);
     const currentHumanReadable = dateFns.format(new Date(elapsedTime * 1000), 'mm:ss');
 
     // Calculate human-readable end time
-    const totalDuration = dateFns.differenceInSeconds(endTime, startTime);
+    const totalDuration = dateFns.differenceInSeconds(endTime as Date, startTime as Date);
     const endHumanReadable = dateFns.format(new Date(totalDuration * 1000), 'mm:ss');
 
     const artistCount = spotifyActivity.state?.split('; ').length || 0;
 
+    const startTimestamp = spotifyActivity.timestamps?.start;
+    const endTimestamp = spotifyActivity.timestamps?.end;
+
     activePlatforms.spotify = {
-      track_id: spotifyActivity.syncId,
-      song: spotifyActivity.details,
-      artist: artistCount > 1 ? spotifyActivity.state?.split('; ') : spotifyActivity.state,
-      album: spotifyActivity.assets?.largeText,
-      album_cover: spotifyActivity.assets?.largeImageURL(),
+      track_id: (spotifyActivity.syncId ?? '') as unknown as string,
+      song: (spotifyActivity.details ?? '') as unknown as string,
+      artist: (artistCount > 1 ? (spotifyActivity.state?.split('; ') ?? []) : (spotifyActivity.state ?? '')) as unknown as string | string[],
+      album: (spotifyActivity.assets?.largeText ?? '') as unknown as string,
+      album_cover: (spotifyActivity.assets?.largeImageURL() ?? '') as unknown as string,
       start_time: {
-        unix: Math.floor(spotifyActivity.timestamps?.start?.getTime() / 1000),
-        raw: spotifyActivity.timestamps?.start
+        unix: Math.floor((startTimestamp?.getTime() ?? 0) / 1000) as unknown as number,
+        raw: (startTimestamp ?? null) as unknown as Date
       },
       end_time: {
-        unix: Math.floor(spotifyActivity.timestamps?.end?.getTime() / 1000),
-        raw: spotifyActivity.timestamps?.end
+        unix: Math.floor((endTimestamp?.getTime() ?? 0) / 1000) as unknown as number,
+        raw: (endTimestamp ?? null) as unknown as Date
       },
       time: {
         current_human_readable: currentHumanReadable,
         end_human_readable: endHumanReadable
       }
-    };
+    } as unknown as ClientPresenceStatusData['spotify'];
   }
 
   const parsedActivites = [];
@@ -113,8 +120,8 @@ function createUserData(user_id: string, kv: Map<string, string> | {}): UserData
           Object.assign(activityData, {
             timestamps: {
               start_time: {
-                unix: Math.floor(activity.timestamps.start.getTime() / 1000),
-                raw: activity.timestamps.start
+                unix: Math.floor((activity.timestamps?.start?.getTime() ?? 0) / 1000) as unknown as number,
+                raw: (activity.timestamps?.start ?? null) as unknown as Date
               }
             }
           });
@@ -142,41 +149,41 @@ function createUserData(user_id: string, kv: Map<string, string> | {}): UserData
         bitfield: member.user.flags?.bitfield
       },
       monitoring_since: {
-        unix: Math.floor(member.joinedTimestamp / 1000),
-        raw: member.joinedAt
+        unix: Math.floor((member.joinedTimestamp ?? 0) / 1000) as unknown as number,
+        raw: (member.joinedAt ?? new Date(0)) as unknown as Date
       }
     },
     active_platforms: activePlatforms,
     activities: parsedActivites,
     storage: kv,
     server_tag: member.user.primaryGuild?.identityEnabled ? {
-      guild_id: member.user.primaryGuild.identityGuildId,
-      name: member.user.primaryGuild.tag,
-      icon_url: member.user.guildTagBadgeURL()
+      guild_id: (member.user.primaryGuild?.identityGuildId ?? '') as unknown as string,
+      name: (member.user.primaryGuild?.tag ?? '') as unknown as string,
+      icon_url: (member.user.guildTagBadgeURL() ?? '') as unknown as string
     } : null
   };
 
   if ((!member.presence || member.presence.status === 'offline') && client.lastSeens.has(user_id)) {
-    const lastSeen = client.lastSeens.get(user_id);
-    const lastSeenDate = new Date(lastSeen);
+    const lastSeen = client.lastSeens.get(user_id)!;
+    const lastSeenDate = new Date(lastSeen as unknown as string | number | Date);
 
     return {
       ...baseObject,
       status: 'offline',
       last_seen_at: {
-        unix: Math.floor(lastSeenDate.getTime() / 1000),
-        raw: lastSeenDate
+        unix: Math.floor(lastSeenDate.getTime() / 1000) as unknown as number,
+        raw: lastSeenDate as unknown as Date
       }
-    };
+    } as unknown as UserData;
   } else {
     return {
       ...baseObject,
       status: member.presence?.status as Exclude<string, 'offline'>,
       last_seen_at: {
-        unix: null,
-        raw: null
+        unix: (null as unknown as number),
+        raw: (null as unknown as Date)
       }
-    };
+    } as unknown as UserData;
   }
 }
 

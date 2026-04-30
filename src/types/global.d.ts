@@ -4,7 +4,6 @@ import type { WebSocket } from 'ws';
 
 type Config = {
   bypass_command_permissions_check: string[];
-  base_guild_id: string;
   max_bulk_get_users_size: number;
   server: ServerConfig;
   logger: LoggerConfig;

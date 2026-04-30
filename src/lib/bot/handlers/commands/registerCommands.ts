@@ -1,8 +1,11 @@
 import * as Discord from 'discord.js';
-
 import type { CommandType } from '@/src/types';
+import 'dotenv/config';
 
-async function registerCommands({ token, commands, application_id, base_guild_id }: { token: string, commands: Discord.Collection<string, CommandType>, application_id: string, base_guild_id: string }) {
+async function registerCommands({ token, commands, application_id, base_guild_id }: { token: string, commands: Discord.Collection<string, CommandType>, application_id: string, base_guild_id?: string }) {
+  const GUILD_ID = base_guild_id ?? process.env.GUILD_ID;
+  if (!GUILD_ID) throw new Error('GUILD_ID environment variable is not set.');
+
   const rest = new Discord.REST({ version: '10' }).setToken(token);
 
   try {
@@ -24,7 +27,7 @@ async function registerCommands({ token, commands, application_id, base_guild_id
 
     // Register guild commands
     await rest.put(
-      Discord.Routes.applicationGuildCommands(application_id, base_guild_id),
+      Discord.Routes.applicationGuildCommands(application_id, GUILD_ID),
       {
         body: commands
           .filter(command => !command.metadata?.global)

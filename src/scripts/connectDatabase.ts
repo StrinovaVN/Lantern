@@ -2,7 +2,7 @@ import mongoose from 'mongoose';
 import { CronJob } from 'cron';
 import createMongoBackup from '@/scripts/createMongoBackup';
 
-mongoose.connect(process.env.MONGO_URL, { dbName: process.env.MONGODB_NAME })
+const connectPromise = mongoose.connect(process.env.MONGO_URL, { dbName: process.env.MONGODB_NAME })
   .then(() => {
     logger.log('database', 'Connected to database.');
 
@@ -20,4 +20,11 @@ mongoose.connect(process.env.MONGO_URL, { dbName: process.env.MONGODB_NAME })
         }
       }, null, true);
     }
+  })
+  .catch(error => {
+    logger.error('Failed to connect to database:');
+    logger.error(error);
+    process.exit(1);
   });
+
+export default connectPromise;

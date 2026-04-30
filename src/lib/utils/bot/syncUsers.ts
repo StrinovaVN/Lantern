@@ -1,6 +1,7 @@
 import User from '@/models/User';
 import Storage from '@/models/Storage';
 import { MongooseError } from 'mongoose';
+import 'dotenv/config';
 
 /**
  * Synchronizes the users between the Discord guild and the database.
@@ -9,7 +10,10 @@ import { MongooseError } from 'mongoose';
  * @returns {Promise<void>} A promise that resolves when the synchronization is complete.
  */
 async function syncUsers() {
-  const guild = client.guilds.cache.get(config.base_guild_id);
+  const GUILD_ID = process.env.GUILD_ID;
+  if (!GUILD_ID) throw new Error('GUILD_ID environment variable is not set.');
+
+  const guild = client.guilds.cache.get(GUILD_ID);
   if (!guild) throw new Error('Base guild not found.');
 
   const members = await guild.members.fetch();

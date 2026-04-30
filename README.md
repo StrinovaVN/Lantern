@@ -1,6 +1,6 @@
 # 🔦 Lantern: Illuminate Your Discord Presence with Real-Time API and WebSocket
 
-Lantern is a powerful service designed to effortlessly broadcast your active Discord status to both a RESTful API endpoint (`lantern.rest/api/v1/users/:your_id`) and a WebSocket connection. Want to showcase your current Spotify tracks on your personal site? Lantern has you covered.
+Lantern is a powerful service designed to effortlessly broadcast your active Discord status to both a RESTful API endpoint (`lantern.strinovavn.com/api/v1/users/:your_id`) and a WebSocket connection. Want to showcase your current Spotify tracks on your personal site? Lantern has you covered.
 
 While Lantern is ready to use out-of-the-box without the need for any deployment, it also offers the flexibility for self-hosting with minimal setup. Enjoy seamless integration and real-time updates with Lantern.
 
@@ -280,7 +280,7 @@ Retrieve the data of a user with the specified ID.
 
 ## WebSocket
 
-The WebSocket connection is available at `wss://lantern.rest/socket`.
+The WebSocket connection is available at `wss://lantern.strinovavn.com/socket`.
 
 Once connected, you will receive `Opcode 1: Hello` which will contain `heartbeat_interval` in the data field.
 
@@ -652,7 +652,7 @@ Lantern also offers a simple key-value storage system that can be accessed throu
 
 > [!NOTE]
 > Admins can use `/banned user:<target>` to block a user from customizing profile fields.
-> After a user is banned, profile customization is blocked from both `/custom` and `/storage` for these keys: `avatar`, `banner`, `displayname`.
+> After a user is banned, profile customization is blocked.
 > Existing values for those keys are also removed (reset to default behavior).
 
 #### Use cases
@@ -859,78 +859,70 @@ Delete a key-value pair for a specific user.
 
 To self-host Lantern, you will need to have the following prerequisites installed on your system:
 
-- [Node.js](https://nodejs.org/en/download/) (v22.x won't work, recommend using v21.x)
-- [pnpm](https://pnpm.io/installation)
+- [Bun](https://bun.com/docs/installation) (recommend using latest version)
 - [Git](https://git-scm.com/downloads)
 - [MongoDB](https://www.mongodb.com/try/download/community)
 
 Once you have the prerequisites installed, follow these steps to self-host Lantern:
 
-1. Clone the repository to your local machine:
+- Clone the repository to your local machine:
 
 ```bash
-git clone https://github.com/discordplace/lantern.git
+git clone https://github.com/StrinovaVN/lantern.git
 ```
 
-1. Navigate to the cloned repository:
+- Navigate to the cloned repository:
 
 ```bash
 cd lantern
 ```
 
-1. Install the required dependencies:
+- Install the required dependencies:
 
 ```bash
-pnpm install
+bun install
 ```
 
-1. Rename the `.env.example` file to `.env` and fill in the configuration values:
+- Rename the `.env.example` file to `.env` and fill in the configuration values:
 
 ```env
 DISCORD_BOT_TOKEN=your_discord_bot_token
+GUILD_ID=guild_id_your_bot_working_on
 MONGO_URL=your_MONGO_URL
 MONGODB_NAME=your_mongodb_name
 KV_TOKEN_ENCRYPTION_SECRET=your_256_bit_encryption_secret
+PORT=expose_port
 ```
 
 > [!NOTE]
 >
 > - `KV_TOKEN_ENCRYPTION_SECRET` should be a 256-bit encryption secret that you generate. You can use a tool like [this](https://asecuritysite.com/encryption/plain). This secret is used to encrypt the KV storage token. So make sure to keep it secure.
 
-1. Fill these configuration values in the `config.toml` file with your own values:
+1. Fill these configuration values in the `config.toml` file with your own values.
 
-```toml
-base_guild_id = 'your_base_guild_id'
-
-[server]
-port = 8000
-```
-
-1. Start the server. This builds the app and starts the server:
+2. Start the server.
 
 ```bash
-pnpm start
+bun start
 ```
 
-1. The server should now be running on `http://localhost:8000`. You can access the API from this URL. The WebSocket connection is available at `ws://localhost:8000/socket`.
+3. The server should now be running on `http://localhost:8000`. You can access the API from this URL. The WebSocket connection is available at `ws://localhost:8000/socket`.
 
-2. (Optional) To register/unregister bot commands, run the following command:
+4. (Optional) To register/unregister bot commands, run the following command:
 
 ```bash
-npm run bot:registerCommands
+bun run bot:registerCommands
 ```
   
 ```bash
-npm run bot:unregisterCommands
+bun run bot:unregisterCommands
 ```
 
 > [!NOTE]  
 > ****Make sure you enable**** these settings in your bot's application settings:
 >
 > - `PRESENCE INTENT`
-> - `GUILD MEMBERS INTENT`
-
-> [!NOTE]  
+> - `GUILD MEMBERS INTENT`  
 > ****For production use**** you should connect your domain to Cloudflare. Without Cloudflare, the server will not be able to get the visitor's IP addresses. In development environment, server will use `unknown` as the IP addresses.
 
 ## Contributing

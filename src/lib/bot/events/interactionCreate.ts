@@ -3,6 +3,7 @@ import getCommandName from '@/src/lib/utils/bot/getCommandName';
 import Storage from '@/models/Storage';
 import type { CommandType, EventType } from '@/src/types';
 import createUserData from '@/utils/bot/createUserData';
+import 'dotenv/config';
 
 export default {
   name: 'interactionCreate',
@@ -122,7 +123,7 @@ function permissionCheck(interaction: Discord.BaseInteraction, commandData: Comm
   if (commandData.restrictions.guildOnly && !interaction.guild) return false;
 
   // Check if the command should only be used in the base guild
-  if (commandData.restrictions.baseGuildOnly && interaction.guild?.id !== config.base_guild_id) return false;
+  if (commandData.restrictions.baseGuildOnly && interaction.guild?.id !== process.env.GUILD_ID) return false;
 
   // Check if the command can only be used by the owner of the guild
   if (commandData.restrictions.ownerOnly && interaction.user.id !== interaction.guild?.ownerId) return false;
