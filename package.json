@@ -8,12 +8,12 @@
   "scripts": {
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
-    "dev": "ENV=development bun run  --watch src/index.ts",
-    "build": "rm -rf dist && bun build ./src/index.ts --target bun --outdir dist",
+    "dev": "bun run  --watch src/index.ts",
+    "build": "rm -rf dist && mkdir dist && bun run unregister:commands && bun run register:commands && bun run copyfiles && bun build ./src/index.ts --outdir dist --target=bun --minify --packages=external",
     "start": "NODE_ENV=production bun dist/index.js",
-    "copyfiles": "cp src/config.toml dist/ && cp .env dist/ && cp swagger.json dist/",
-    "register:commands": "NODE_ENV=development bun src/scripts/registerCommands.ts",
-    "unregister:commands": "NODE_ENV=development bun src/scripts/unregisterCommands.ts",
+    "copyfiles": "cp src/config.toml dist/ && cp .env dist/ && cp openapi.json dist/",
+    "register:commands": "bun src/scripts/registerCommands.ts",
+    "unregister:commands": "bun src/scripts/unregisterCommands.ts",
     "prepare": "husky"
   },
   "repository": {
