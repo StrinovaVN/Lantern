@@ -11,7 +11,7 @@
     "dev": "bun run  --watch src/index.ts",
     "build": "rm -rf dist && mkdir dist && bun run unregister:commands && bun run register:commands && bun run copyfiles && bun build ./src/index.ts --outdir dist --target=bun --minify --packages=external",
     "start": "NODE_ENV=production bun dist/index.js",
-    "copyfiles": "cp src/config.toml dist/ && cp .env dist/ && cp openapi.json dist/",
+    "copyfiles": "cp src/config.toml dist/ && cp openapi.json dist/",
     "register:commands": "bun src/scripts/registerCommands.ts",
     "unregister:commands": "bun src/scripts/unregisterCommands.ts",
     "prepare": "husky"
