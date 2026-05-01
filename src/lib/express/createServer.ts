@@ -9,7 +9,7 @@ import handleErrors from '@/express/middlewares/handleErrors';
 import ws from 'express-ws';
 import path from 'node:path';
 import fs from 'node:fs';
-import swaggerUi from 'swagger-ui-express';
+import { apiReference } from '@scalar/express-api-reference';
 
 async function createServer() {
   const options = {
@@ -49,8 +49,13 @@ async function createServer() {
     additionalMethods: ['ws']
   });
 
-  const swaggerSpec = JSON.parse(fs.readFileSync(path.join(process.cwd(), 'swagger.json'), 'utf-8'));
-  app.use('/docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+  const swaggerSpec = JSON.parse(fs.readFileSync(path.join(process.cwd(), 'openapi.json'), 'utf-8'));
+  app.use(
+    '/docs',
+    apiReference({
+      content: swaggerSpec
+    })
+  );
 
   app.use(notFoundHandler as express.RequestHandler);
   app.use(handleErrors as express.ErrorRequestHandler);

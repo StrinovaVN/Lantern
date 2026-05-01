@@ -3,11 +3,7 @@
   "info": {
     "title": "Lantern API",
     "version": "1",
-    "description": "API Documentation",
-    "contact": {
-      "name": "Strinova VietNam",
-      "url": "https://strinovavn.com"
-    }
+    "description": "API Documentation"
   },
   "servers": [
     {

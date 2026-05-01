@@ -8,7 +8,7 @@ export const get = [
     return response.json({
       data: {
         info: `Hello! Navigator my name is ${client.user?.tag}`,
-        discord: 'https://discord.gg/pfGHWWwcPT',
+        discord: 'https://discord.strinovavn.com',
         currently_monitoring_users: currentlyMonitoringUsers
       }
     });
