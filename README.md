@@ -850,8 +850,7 @@ Delete a key-value pair for a specific user.
 
 To self-host Lantern, you will need to have the following prerequisites installed on your system:
 
-- [Node.js](https://nodejs.org/en/download/) (v22.x won't work, recommend using v21.x)
-- [pnpm](https://pnpm.io/installation)
+- [Bun](https://bun.com) (recommend latest)
 - [Git](https://git-scm.com/downloads)
 - [MongoDB](https://www.mongodb.com/try/download/community)
 
@@ -872,7 +871,7 @@ cd lantern
 1. Install the required dependencies:
 
 ```bash
-pnpm install
+bun install
 ```
 
 1. Rename the `.env.example` file to `.env` and fill in the configuration values:
@@ -900,7 +899,7 @@ port = 8000
 1. Start the server. This builds the app and starts the server:
 
 ```bash
-pnpm start
+bun dev
 ```
 
 1. The server should now be running on `http://localhost:8000`. You can access the API from this URL. The WebSocket connection is available at `ws://localhost:8000/socket`.
@@ -908,11 +907,11 @@ pnpm start
 2. (Optional) To register/unregister bot commands, run the following command:
 
 ```bash
-npm run bot:registerCommands
+bun run bot:registerCommands
 ```
   
 ```bash
-npm run bot:unregisterCommands
+bun run bot:unregisterCommands
 ```
 
 > [!NOTE]  

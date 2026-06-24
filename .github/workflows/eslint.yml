@@ -11,24 +11,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         
-      - name: Set up Node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version: '18'
+      - name: Set up Bun
+        uses: oven-sh/setup-bun@v2
 
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v4
-        with:
-          version: 9
-
-      - uses: ./.github/actions/setup-node-env
-        with:
-          node-version: 18
-          cache-path: /node_modules
-          cache-key: "${{hashFiles('pnpm-lock.yaml')}}"
-          
       - name: Run lint script
-        run: |
-          npm run lint
+        run: bun run lint
