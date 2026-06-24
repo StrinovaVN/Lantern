@@ -3,3 +3,7 @@ node_modules/
 logs/
 dist/
 database-backups/
+
+# ide
+.vscode
+.webstorm

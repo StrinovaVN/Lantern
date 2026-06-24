@@ -1,0 +1,542 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Lantern API",
+    "version": "1.4.1",
+    "description": "API documentation for Lantern.",
+    "contact": {
+      "name": "Strinova VietNam",
+      "url": "https://strinovavn.com"
+    }
+  },
+  "servers": [
+    {
+      "url": "https://lantern.strinovavn.com",
+      "description": "Production server"
+    },
+    {
+      "url": "http://localhost:3003",
+      "description": "Local development server"
+    }
+  ],
+  "tags": [
+    {
+      "name": "Users",
+      "description": "Discord user information monitored by Lantern."
+    },
+    {
+      "name": "Storage",
+      "description": "Per-user key-value storage."
+    }
+  ],
+  "paths": {
+    "/api/v1/users": {
+      "get": {
+        "operationId": "getUsers",
+        "summary": "Get user data by user IDs",
+        "description": "Fetches data for multiple monitored Discord users.",
+        "tags": [
+          "Users"
+        ],
+        "parameters": [
+          {
+            "name": "user_ids",
+            "in": "query",
+            "required": true,
+            "description": "Discord user IDs. Repeat the query parameter for each ID.",
+            "style": "form",
+            "explode": true,
+            "schema": {
+              "type": "array",
+              "minItems": 2,
+              "uniqueItems": true,
+              "items": {
+                "type": "string",
+                "minLength": 17,
+                "maxLength": 19,
+                "pattern": "^[0-9]{17,19}$"
+              }
+            },
+            "example": [
+              "123456789012345678",
+              "234567890123456789"
+            ]
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "User data retrieved successfully.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/UserData"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "503": {
+            "$ref": "#/components/responses/ServiceUnavailable"
+          }
+        }
+      }
+    },
+    "/api/v1/users/{user_id}": {
+      "get": {
+        "operationId": "getUser",
+        "summary": "Get user data by user ID",
+        "description": "Fetches data for one monitored Discord user.",
+        "tags": [
+          "Users"
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/UserId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "User data retrieved successfully.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserData"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "503": {
+            "$ref": "#/components/responses/ServiceUnavailable"
+          }
+        }
+      }
+    },
+    "/api/v1/users/{user_id}/storage": {
+      "get": {
+        "operationId": "getUserStorage",
+        "summary": "Get all user storage data",
+        "description": "Fetches all key-value data stored for a monitored user.",
+        "tags": [
+          "Storage"
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/UserId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "User storage data retrieved successfully.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StorageData"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "503": {
+            "$ref": "#/components/responses/ServiceUnavailable"
+          }
+        }
+      },
+      "delete": {
+        "operationId": "deleteUserStorage",
+        "summary": "Delete all user storage data",
+        "description": "Deletes all key-value data stored for a monitored user.",
+        "tags": [
+          "Storage"
+        ],
+        "security": [
+          {
+            "KvTokenAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/UserId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/Success"
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "503": {
+            "$ref": "#/components/responses/ServiceUnavailable"
+          }
+        }
+      }
+    },
+    "/api/v1/users/{user_id}/storage/{key}": {
+      "get": {
+        "operationId": "getUserStorageValue",
+        "summary": "Get user storage data by key",
+        "description": "Fetches one value from a monitored user's storage.",
+        "tags": [
+          "Storage"
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/UserId"
+          },
+          {
+            "$ref": "#/components/parameters/StorageKey"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Storage value retrieved successfully.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StorageValueResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "503": {
+            "$ref": "#/components/responses/ServiceUnavailable"
+          }
+        }
+      },
+      "put": {
+        "operationId": "setUserStorageValue",
+        "summary": "Create or replace user storage data by key",
+        "description": "Creates or replaces one value in a monitored user's storage.",
+        "tags": [
+          "Storage"
+        ],
+        "security": [
+          {
+            "KvTokenAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/UserId"
+          },
+          {
+            "$ref": "#/components/parameters/StorageKey"
+          }
+        ],
+        "requestBody": {
+          "$ref": "#/components/requestBodies/StorageValue"
+        },
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/Success"
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "503": {
+            "$ref": "#/components/responses/ServiceUnavailable"
+          }
+        }
+      },
+      "patch": {
+        "operationId": "updateUserStorageValue",
+        "summary": "Update user storage data by key",
+        "description": "Updates an existing value in a monitored user's storage.",
+        "tags": [
+          "Storage"
+        ],
+        "security": [
+          {
+            "KvTokenAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/UserId"
+          },
+          {
+            "$ref": "#/components/parameters/StorageKey"
+          }
+        ],
+        "requestBody": {
+          "$ref": "#/components/requestBodies/StorageValue"
+        },
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/Success"
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "503": {
+            "$ref": "#/components/responses/ServiceUnavailable"
+          }
+        }
+      },
+      "delete": {
+        "operationId": "deleteUserStorageValue",
+        "summary": "Delete user storage data by key",
+        "description": "Deletes one value from a monitored user's storage.",
+        "tags": [
+          "Storage"
+        ],
+        "security": [
+          {
+            "KvTokenAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/UserId"
+          },
+          {
+            "$ref": "#/components/parameters/StorageKey"
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/Success"
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "503": {
+            "$ref": "#/components/responses/ServiceUnavailable"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "KvTokenAuth": {
+        "type": "apiKey",
+        "name": "Authorization",
+        "in": "header",
+        "description": "Raw KV token issued by the Lantern bot."
+      }
+    },
+    "parameters": {
+      "UserId": {
+        "name": "user_id",
+        "in": "path",
+        "required": true,
+        "description": "Discord user ID.",
+        "schema": {
+          "type": "string",
+          "minLength": 17,
+          "maxLength": 19,
+          "pattern": "^[0-9]{17,19}$"
+        },
+        "example": "123456789012345678"
+      },
+      "StorageKey": {
+        "name": "key",
+        "in": "path",
+        "required": true,
+        "description": "Alphanumeric storage key.",
+        "schema": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 255,
+          "pattern": "^[a-zA-Z0-9]+$"
+        },
+        "example": "profile"
+      }
+    },
+    "requestBodies": {
+      "StorageValue": {
+        "required": true,
+        "description": "Value to store.",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/StorageValueRequest"
+            },
+            "example": {
+              "value": "Example value"
+            }
+          }
+        }
+      }
+    },
+    "responses": {
+      "Success": {
+        "description": "Operation completed successfully.",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/SuccessResponse"
+            }
+          }
+        }
+      },
+      "BadRequest": {
+        "description": "The request contains invalid parameters or data.",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/ErrorResponse"
+            }
+          }
+        }
+      },
+      "Unauthorized": {
+        "description": "The KV token is missing or invalid.",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/ErrorResponse"
+            },
+            "example": {
+              "error": "Unauthorized."
+            }
+          }
+        }
+      },
+      "NotFound": {
+        "description": "The requested user, storage, or key was not found.",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/ErrorResponse"
+            }
+          }
+        }
+      },
+      "ServiceUnavailable": {
+        "description": "The base Discord guild is not available.",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/ErrorResponse"
+            },
+            "example": {
+              "error": "Base guild is not available."
+            }
+          }
+        }
+      }
+    },
+    "schemas": {
+      "UserData": {
+        "type": "object",
+        "description": "Current Discord data for a monitored user.",
+        "additionalProperties": true
+      },
+      "StorageData": {
+        "type": "object",
+        "description": "Key-value data stored for a user.",
+        "additionalProperties": {
+          "type": "string"
+        },
+        "example": {
+          "profile": "Example value"
+        }
+      },
+      "StorageValueRequest": {
+        "type": "object",
+        "required": [
+          "value"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "value": {
+            "type": "string",
+            "maxLength": 30000
+          }
+        }
+      },
+      "StorageValueResponse": {
+        "type": "object",
+        "required": [
+          "value"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "value": {
+            "type": "string"
+          }
+        },
+        "example": {
+          "value": "Example value"
+        }
+      },
+      "SuccessResponse": {
+        "type": "object",
+        "required": [
+          "success"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "example": true
+          }
+        }
+      },
+      "ErrorResponse": {
+        "type": "object",
+        "minProperties": 1,
+        "additionalProperties": false,
+        "properties": {
+          "error": {
+            "type": "string"
+          },
+          "errors": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  }
+}

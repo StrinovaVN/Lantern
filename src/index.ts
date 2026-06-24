@@ -3,8 +3,10 @@ import 'dotenv/config';
 import '@/scripts/loadConfig';
 import '@/scripts/loadLogger';
 import '@/scripts/validateEnvironmentVariables';
-import '@/scripts/connectDatabase';
 import '@/scripts/handleUncaughtExceptions';
 
+import connectDatabase from '@/scripts/connectDatabase';
 import createClient from '@/bot/createClient';
-createClient();
+
+await connectDatabase();
+await createClient();

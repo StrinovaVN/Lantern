@@ -38,7 +38,7 @@ While Lantern is ready to use out-of-the-box without the need for any deployment
 
 Lantern provides OpenAPI documentation for the RESTful API, which you can access at `https://lantern.strinovavn.com/docs`. The API offers endpoints to retrieve user data and key-value storage.
 
-You can also refer to the swagger.json file in the repository for the API documentation. The API endpoints are as follows:
+You can also refer to the openapi.json file in the repository for the API documentation. The API endpoints are as follows:
 
 #### GET `/api/v1/users`
 
@@ -75,6 +75,7 @@ Retrieve the data of users with the specified IDs.
         "avatar": "abcdef1234567890",
         "avatar_url": "https://cdn.discordapp.com/avatars/123456789012345678/123456789012345678.webp",
         "display_avatar_url": "https://cdn.discordapp.com/avatars/123456789012345678/123456789012345678.webp",
+        "banner": "https://cdn.discordapp.com/banners/123456789012345678/abcdef1234567890.webp",
         "bot": false,
         "flags": {
           "human_readable": ["Staff"],
@@ -167,17 +168,6 @@ Retrieve the data of a user with the specified ID.
 | Name | Type | Description |
 | ---- | ---- | ----------- |
 | `id` | string | The ID of the user to retrieve. |
-| `svg` | boolean | Whether to return the user's avatar as an SVG image. Defaults to `false`. |
-| `theme` | string | The theme to use for the user's card. Must be either `light` or `dark`. |
-| `borderRadius` | number | The border radius rem value for the user's card. Defaults to `2`. |
-| `hideGlobalName` | number | Whether to hide the user's global name. Must be either `0` or `1`. |
-| `hideStatus` | number | Whether to hide the user's status. Must be either `0` or `1`. |
-| `hideBadges` | number | Whether to hide the user's badges. Must be either `0` or `1`. |
-| `hideActivity` | number | Whether to hide the user's activity. Must be either `0` or `1`. |
-| `hideLastSeen` | number | Whether to hide the user's last seen time. Must be either `0` or `1`. |
-| `hideServerTag` | number | Whether to hide the user's server tag. Must be either `0` or `1`. |
-| `noActivityTitle` | string | The title to display when the user has no activity. Default might be `No Activity`. Can't be greater than 64 characters. |
-| `noActivityMessage` | string | The message to display when the user has no activity. Default might be `This user is not currently doing anything.`. Can't be greater than 256 characters. |
 
 ##### Response
 
@@ -197,6 +187,7 @@ Retrieve the data of a user with the specified ID.
     "avatar": "abcdef1234567890",
     "avatar_url": "https://cdn.discordapp.com/avatars/123456789012345678/123456789012345678.webp",
     "display_avatar_url": "https://cdn.discordapp.com/avatars/123456789012345678/123456789012345678.webp",
+    "banner": "#5865f2",
     "bot": false,
     "flags": {
       "human_readable": ["Staff"],

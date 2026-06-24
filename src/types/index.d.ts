@@ -49,13 +49,6 @@ export type CommandType = {
   }
 }
 
-export type CronType = {
-  pattern: string,
-  execute: () => Promise<void>,
-  executeOnStart?: boolean,
-  name: string
-}
-
 export type EventType = {
   [K in keyof Discord.ClientEvents]: {
     name: K;
@@ -63,20 +56,9 @@ export type EventType = {
   };
 }[keyof Discord.ClientEvents];
 
-declare module 'express' {
-  interface Request {
-    clientIp: string;
-  }
-
-  interface Response {
-    sendError: (message: string, statusCode: number) => void;
-  }
-}
-
 declare module 'discord.js' {
   interface Client {
     commands: Discord.Collection<string, CommandType>;
-    crons: Discord.Collection<string, CronType>;
     events: Discord.Collection<string, EventType>;
     lastSeens: Discord.Collection<string, Date>;
   }
@@ -101,6 +83,7 @@ export type BaseUserType = {
     avatar: string | null;
     avatar_url: string | null;
     display_avatar_url: string;
+    banner: string | null;
     bot: boolean;
     flags: {
       human_readable: string[];
@@ -117,13 +100,20 @@ export type BaseUserType = {
   server_tag: {
     guild_id: string;
     name: string;
-    icon_url: string;
+    icon_url: string | null;
   } | null;
 };
 
-export type UserData =
-  | (BaseUserType & { status: 'offline'; last_seen_at: { unix: number; raw: Date } })
-  | (BaseUserType & { status: Exclude<string, 'offline'>; last_seen_at: { unix: number; raw: Date } });
+export type UserData = BaseUserType & {
+  status: ClientPresenceStatus;
+  last_seen_at: {
+    unix: number;
+    raw: Date;
+  } | {
+    unix: null;
+    raw: null;
+  };
+};
 
 export type ClientPresenceStatus = 'online' | 'idle' | 'dnd' | 'offline';
 
@@ -135,22 +125,22 @@ export type ClientPresenceStatusData = {
 }
 
 type SpotifyActivity = {
-  track_id: string,
-  song: string,
-  artist: string | string[],
-  album: string,
-  album_cover: string,
+  track_id: string | null,
+  song: string | null,
+  artist: string | string[] | null,
+  album: string | null,
+  album_cover: string | null,
   start_time: {
     unix: number,
     raw: Date
-  },
+  } | null,
   end_time: {
     unix: number,
     raw: Date
-  },
+  } | null,
   time: {
-    current_human_readable: string,
-    end_human_readable: string
+    current_human_readable: string | null,
+    end_human_readable: string | null
   }
 }
 
@@ -171,20 +161,21 @@ export type CustomStatusActivity = {
 
 export type OtherActivity = {
   name: string,
-  type: keyof typeof Discord.ActivityType,
+  type: Discord.ActivityType,
   state: string | null,
   details: string | null,
+  application_id: string | null,
   created_at: number,
   assets?: {
     large_image: {
-      hash?: string,
-      image_url?: string,
-      text: string
+      hash: string | null,
+      image_url: string | null,
+      text: string | null
     },
     small_image: {
-      hash?: string,
-      image_url?: string,
-      text: string
+      hash: string | null,
+      image_url: string | null,
+      text: string | null
     }
   },
   timestamps?: {
@@ -194,19 +185,3 @@ export type OtherActivity = {
     }
   }
 }
-
-export type APIUsersGETRequestQuery = {
-  svg?: number;
-  theme?: 'light' | 'dark';
-  borderRadius?: string;
-  hideGlobalName?: string;
-  hideStatus?: string;
-  hideBadges?: string;
-  hideActivity?: string;
-  hideLastSeen?: string;
-  hideServerTag?: string;
-  noActivityTitle?: string;
-  noActivityMessage?: string;
-}
-
-export type CreateSvgOptions = Omit<APIUsersGETRequestQuery, 'svg'>;

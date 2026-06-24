@@ -1,5 +1,5 @@
 import syncUsers from '@/utils/bot/syncUsers';
-import { send as socket_send, disconnect as socket_disconnect } from '@/express/routes/socket/utils';
+import { send as socket_send, disconnect as socket_disconnect } from '@/elysia/routes/socket/utils';
 import type { EventType } from '@/src/types';
 
 export default {

@@ -1,22 +1,51 @@
 import * as Discord from 'discord.js';
 import * as dateFns from 'date-fns';
-import type { UserData, ClientPresenceStatus, ClientPresenceStatusData } from '@/src/types';
+import type {
+  ClientPresenceStatus,
+  ClientPresenceStatusData,
+  CustomStatusActivity,
+  OtherActivity,
+  UserData
+} from '@/src/types';
+
+const userProfileRequests = new Map<string, Promise<Discord.User>>();
+
+async function fetchUserProfile(user: Discord.User): Promise<Discord.User> {
+  if (user.banner !== undefined && user.accentColor !== undefined) return user;
+
+  const pendingRequest = userProfileRequests.get(user.id);
+  if (pendingRequest) return pendingRequest;
+
+  const request = user.fetch()
+    .catch(error => {
+      logger.warn(`Failed to fetch Discord profile for user ${user.id}.`);
+      logger.warn(error);
+
+      return user;
+    })
+    .finally(() => userProfileRequests.delete(user.id));
+
+  userProfileRequests.set(user.id, request);
+
+  return request;
+}
 
 /**
  * Creates a user data object for a given user ID and key-value storage.
  *
  * @param {string} user_id - The ID of the user to create data for.
  * @param {Map<string, string> | {}} kv - A key-value storage object or map.
- * @returns {UserData} The user data object containing metadata, status, active platforms, activities, and storage.
+ * @returns {Promise<UserData>} The user data object containing metadata, status, active platforms, activities, and storage.
  * @throws {Error} If the base guild or member is not found.
  */
-function createUserData(user_id: string, kv: Map<string, string> | {}): UserData {
+async function createUserData(user_id: string, kv: Map<string, string> | {}): Promise<UserData> {
   const guild = client.guilds.cache.get(config.base_guild_id);
   if (!guild) throw new Error('Base guild not found.');
 
   const member = guild.members.cache.get(user_id);
   if (!member) throw new Error('Member not found.');
 
+  const user = await fetchUserProfile(member.user);
   const activePlatforms = {
     desktop: member.presence?.clientStatus?.desktop as ClientPresenceStatus || 'offline',
     mobile: member.presence?.clientStatus?.mobile as ClientPresenceStatus || 'offline',
@@ -27,34 +56,38 @@ function createUserData(user_id: string, kv: Map<string, string> | {}): UserData
   const spotifyActivity = member.presence?.activities.find(activity => activity.name === 'Spotify');
 
   if (spotifyActivity) {
-    // Calculate current human-readable time relative to start time
     const currentTime = new Date();
-    const startTime = spotifyActivity.timestamps?.start || new Date();
-    const endTime = spotifyActivity.timestamps?.end || new Date();
-
-    const elapsedTime = dateFns.differenceInSeconds(currentTime, startTime);
-    const currentHumanReadable = dateFns.format(new Date(elapsedTime * 1000), 'mm:ss');
-
-    // Calculate human-readable end time
-    const totalDuration = dateFns.differenceInSeconds(endTime, startTime);
-    const endHumanReadable = dateFns.format(new Date(totalDuration * 1000), 'mm:ss');
-
-    const artistCount = spotifyActivity.state?.split('; ').length || 0;
+    const startTime = spotifyActivity.timestamps?.start;
+    const endTime = spotifyActivity.timestamps?.end;
+    const artist = spotifyActivity.state;
+    const artistCount = artist?.split('; ').length || 0;
+    const currentHumanReadable = startTime
+      ? dateFns.format(
+        new Date(dateFns.differenceInSeconds(currentTime, startTime) * 1000),
+        'mm:ss'
+      )
+      : null;
+    const endHumanReadable = startTime && endTime
+      ? dateFns.format(
+        new Date(dateFns.differenceInSeconds(endTime, startTime) * 1000),
+        'mm:ss'
+      )
+      : null;
 
     activePlatforms.spotify = {
-      track_id: spotifyActivity.syncId,
+      track_id: spotifyActivity.syncId ?? null,
       song: spotifyActivity.details,
-      artist: artistCount > 1 ? spotifyActivity.state?.split('; ') : spotifyActivity.state,
-      album: spotifyActivity.assets?.largeText,
-      album_cover: spotifyActivity.assets?.largeImageURL(),
-      start_time: {
-        unix: Math.floor(spotifyActivity.timestamps?.start?.getTime() / 1000),
-        raw: spotifyActivity.timestamps?.start
-      },
-      end_time: {
-        unix: Math.floor(spotifyActivity.timestamps?.end?.getTime() / 1000),
-        raw: spotifyActivity.timestamps?.end
-      },
+      artist: artistCount > 1 ? artist?.split('; ') ?? null : artist,
+      album: spotifyActivity.assets?.largeText ?? null,
+      album_cover: spotifyActivity.assets?.largeImageURL() ?? null,
+      start_time: startTime ? {
+        unix: Math.floor(startTime.getTime() / 1000),
+        raw: startTime
+      } : null,
+      end_time: endTime ? {
+        unix: Math.floor(endTime.getTime() / 1000),
+        raw: endTime
+      } : null,
       time: {
         current_human_readable: currentHumanReadable,
         end_human_readable: endHumanReadable
@@ -62,7 +95,7 @@ function createUserData(user_id: string, kv: Map<string, string> | {}): UserData
     };
   }
 
-  const parsedActivites = [];
+  const parsedActivites: (CustomStatusActivity | OtherActivity)[] = [];
 
   for (const activity of member.presence?.activities || []) {
     switch (activity.name) {
@@ -83,9 +116,9 @@ function createUserData(user_id: string, kv: Map<string, string> | {}): UserData
         });
         break;
       default:
-        var activityData = {
+        var activityData: OtherActivity = {
           name: activity.name,
-          type: activity.type as unknown as keyof typeof Discord.ActivityType,
+          type: activity.type,
           state: activity.state,
           details: activity.details,
           application_id: activity.applicationId,
@@ -109,7 +142,7 @@ function createUserData(user_id: string, kv: Map<string, string> | {}): UserData
           });
         }
 
-        if (activity.timestamps) {
+        if (activity.timestamps?.start) {
           Object.assign(activityData, {
             timestamps: {
               start_time: {
@@ -126,58 +159,70 @@ function createUserData(user_id: string, kv: Map<string, string> | {}): UserData
     }
   }
 
+  const joinedAt = member.joinedAt;
+  const primaryGuild = user.primaryGuild;
+  const serverTag = primaryGuild?.identityEnabled &&
+    primaryGuild.identityGuildId &&
+    primaryGuild.tag
+    ? {
+      guild_id: primaryGuild.identityGuildId,
+      name: primaryGuild.tag,
+      icon_url: user.guildTagBadgeURL()
+    }
+    : null;
+
   const baseObject = {
     metadata: {
       id: user_id,
-      username: member.user.username,
-      discriminator: member.user.discriminator,
-      global_name: member.user.globalName,
-      avatar: member.user.avatar,
-      avatar_url: member.user.avatarURL(),
-      display_avatar_url: member.user.displayAvatarURL(),
-      bot: member.user.bot,
+      username: user.username,
+      discriminator: user.discriminator,
+      global_name: user.globalName,
+      avatar: user.avatar,
+      avatar_url: user.avatarURL(),
+      display_avatar_url: user.displayAvatarURL(),
+      banner: user.bannerURL() ?? user.hexAccentColor ?? null,
+      bot: user.bot,
       flags: {
-        human_readable: new Discord.UserFlagsBitField(member.user.flags?.bitfield)
+        human_readable: new Discord.UserFlagsBitField(user.flags?.bitfield)
           .toArray(),
-        bitfield: member.user.flags?.bitfield
+        bitfield: user.flags?.bitfield
       },
       monitoring_since: {
-        unix: Math.floor(member.joinedTimestamp / 1000),
-        raw: member.joinedAt
+        unix: joinedAt ? Math.floor(joinedAt.getTime() / 1000) : null,
+        raw: joinedAt
       }
     },
     active_platforms: activePlatforms,
     activities: parsedActivites,
     storage: kv,
-    server_tag: member.user.primaryGuild?.identityEnabled ? {
-      guild_id: member.user.primaryGuild.identityGuildId,
-      name: member.user.primaryGuild.tag,
-      icon_url: member.user.guildTagBadgeURL()
-    } : null
+    server_tag: serverTag
   };
 
-  if ((!member.presence || member.presence.status === 'offline') && client.lastSeens.has(user_id)) {
-    const lastSeen = client.lastSeens.get(user_id);
-    const lastSeenDate = new Date(lastSeen);
+  const presenceStatus = member.presence?.status;
+  const status: ClientPresenceStatus = presenceStatus === 'invisible'
+    ? 'offline'
+    : presenceStatus ?? 'offline';
+  const lastSeen = client.lastSeens.get(user_id);
 
+  if (status === 'offline' && lastSeen) {
     return {
       ...baseObject,
-      status: 'offline',
+      status,
       last_seen_at: {
-        unix: Math.floor(lastSeenDate.getTime() / 1000),
-        raw: lastSeenDate
-      }
-    };
-  } else {
-    return {
-      ...baseObject,
-      status: member.presence?.status as Exclude<string, 'offline'>,
-      last_seen_at: {
-        unix: null,
-        raw: null
+        unix: Math.floor(lastSeen.getTime() / 1000),
+        raw: lastSeen
       }
     };
   }
+
+  return {
+    ...baseObject,
+    status,
+    last_seen_at: {
+      unix: null,
+      raw: null
+    }
+  };
 }
 
 export default createUserData;

@@ -48,21 +48,3 @@ enabled = false
 discord_channel = ''
 cron_pattern = '0 0 * * *'
 exclude_collections = ['evaluateresults']
-
-[user_svg_card.colors.dark]
-  background = '#17171c'
-  background_secondary = '#1e1e24'
-  card = '#1e1e24'
-
-[user_svg_card.colors.dark.text]
-  primary = '#ffffff'
-  secondary = '#999999'
-
-[user_svg_card.colors.light]
-  background = '#e6e6e6'
-  background_secondary = '#dcdcdc'
-  card = '#eeeeee'
-
-[user_svg_card.colors.light.text]
-  primary = '#242a31'
-  secondary = '#6c757d'

@@ -3,9 +3,7 @@ import * as Discord from 'discord.js';
 import fetchCommands from '@/bot/handlers/commands/fetchCommands';
 import fetchEvents from '@/bot/handlers/events/fetchEvents';
 import listenEvents from '@/bot/handlers/events/listenEvents';
-import fetchCrons from '@/bot/handlers/crons/fetchCrons';
-import listenCrons from '@/bot/handlers/crons/listenCrons';
-import createServer from '@/express/createServer';
+import createServer from '@/elysia/createServer';
 import syncUsers from '@/src/lib/utils/bot/syncUsers';
 import User from '@/models/User';
 
@@ -36,7 +34,7 @@ async function createClient() {
 
     syncUsers()
       .then(async () => {
-        // Start the Express server
+        // Start the Elysia server
         createServer();
 
         const commands = await fetchCommands();
@@ -50,13 +48,6 @@ async function createClient() {
         listenEvents(events);
 
         logger.log('bot', `Fetched and listened to ${events.size} events.`);
-
-        const crons = await fetchCrons();
-        client.crons = crons;
-
-        listenCrons(crons);
-
-        logger.log('bot', `Fetched and listened to ${crons.size} crons.`);
 
         // Cache last seen dates
         client.lastSeens = new Discord.Collection();

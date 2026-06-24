@@ -1,6 +1,6 @@
 import mongoose from 'mongoose';
 import createUserData from '@/utils/bot/createUserData';
-import { send as socket_send } from '@/express/routes/socket/utils';
+import { send as socket_send } from '@/elysia/routes/socket/utils';
 import { ChangeStreamDocument } from 'mongodb';
 
 const Schema = mongoose.Schema;
@@ -71,11 +71,15 @@ Model.watch().on('change', async (metadata: ChangeStreamDocument<StorageType>) =
   const foundStorage = await Model.findById(_id).lean();
   if (!foundStorage) return;
 
+  const subscribedSockets = [...ActiveSockets.values()]
+    .filter(data => data.subscribed === 'ALL' || data.subscribed.includes(foundStorage.userId));
+  if (!subscribedSockets.length) return;
+
+  const userData = await createUserData(foundStorage.userId, foundStorage.kv || {});
+
   // Send a message to all active sockets that the user's storage has changed
-  for (const [, data] of ActiveSockets) {
-    if (data.subscribed === 'ALL' || data.subscribed.includes(foundStorage.userId)) {
-      socket_send(data.instance, config.server.socket.opcodes.STORAGE_UPDATE, createUserData(foundStorage.userId, foundStorage.kv || {}));
-    }
+  for (const data of subscribedSockets) {
+    socket_send(data.instance, config.server.socket.opcodes.STORAGE_UPDATE, userData);
   }
 });
 

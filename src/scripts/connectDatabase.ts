@@ -1,26 +1,21 @@
 import mongoose from 'mongoose';
-import dns from 'node:dns/promises';
-import { CronJob } from 'cron';
-import createMongoBackup from '@/scripts/createMongoBackup';
 
-dns.setServers(['1.1.1.1']);
+const clientOptions = { serverApi: { version: '1' as const, strict: true, deprecationErrors: true } };
 
-mongoose.connect(process.env.MONGODB_URI, { dbName: process.env.MONGODB_NAME })
-  .then(() => {
+async function connectDatabase() {
+  try {
+    await mongoose.connect(process.env.MONGODB_URI, {
+      ...clientOptions,
+      dbName: process.env.MONGODB_NAME
+    });
+
     logger.log('database', 'Connected to database.');
+  } catch (error) {
+    logger.error('Failed to connect to database:');
+    logger.error(error);
 
-    if (config.database.backup.enabled) {
-      logger.log('database', 'Database backup enabled.');
+    process.exit(1);
+  }
+}
 
-      new CronJob(config.database.backup.cron_pattern, async () => {
-        try {
-          await createMongoBackup();
-
-          logger.info('Database backup taken successfully.');
-        } catch (error) {
-          logger.error('Failed to take backup:');
-          logger.error(error);
-        }
-      }, null, true);
-    }
-  });
+export default connectDatabase;

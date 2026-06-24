@@ -1,6 +1,5 @@
 import type { Logger } from 'winston';
 import type * as Discord from 'discord.js';
-import type { WebSocket } from 'ws';
 
 type Config = {
   bypass_command_permissions_check: string[];
@@ -9,7 +8,6 @@ type Config = {
   server: ServerConfig;
   logger: LoggerConfig;
   database: DatabaseConfig;
-  user_svg_card: UserSVGCardConfig;
 }
 
 type ServerConfig = {
@@ -72,33 +70,11 @@ type DatabaseBackupConfig = {
   exclude_collections: string[];
 }
 
-type UserSVGCardConfig = {
-  colors: {
-    dark: {
-      background: string;
-      background_secondary: string;
-      card: string;
-      server_tag_background: string;
-      text: {
-        primary: string;
-        secondary: string;
-      }
-    },
-    light: {
-      background: string;
-      background_secondary: string;
-      card: string;
-      server_tag_background: string;
-      text: {
-        primary: string;
-        secondary: string;
-      }
-    }
-  }
-}
-
 type ActiveSocketData = {
-  instance: WebSocket,
+  instance: {
+    send(data: string): unknown;
+    close(code?: number, reason?: string): unknown;
+  },
   lastHeartbeat: number,
   subscribed: string | string[]
 }

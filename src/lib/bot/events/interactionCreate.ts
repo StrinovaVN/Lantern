@@ -60,7 +60,7 @@ export default {
       // "My User Data" Button
       if (interaction.customId === 'my-user-data') {
         const storage = await Storage.findOne({ userId: interaction.user.id });
-        const data = createUserData(interaction.user.id, storage?.kv || {});
+        const data = await createUserData(interaction.user.id, storage?.kv || {});
 
         const embed = new Discord.EmbedBuilder()
           .setFooter({ text: `${interaction.user.displayName}'s data`, iconURL: interaction.user.displayAvatarURL() })
