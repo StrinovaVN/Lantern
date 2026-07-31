@@ -1,0 +1,13 @@
+.git
+.github
+.husky
+.vscode
+.env
+.env.*
+!.env.example
+node_modules
+dist
+logs
+database-backups
+*.log
+.tmp-*

@@ -271,7 +271,7 @@ Retrieve the data of a user with the specified ID.
 
 ## WebSocket
 
-The WebSocket connection is available at `wss://lantern.rest/socket`.
+The WebSocket connection is available at `wss://lantern.strinovavn.com/socket`.
 
 Once connected, you will receive `Opcode 1: Hello` which will contain `heartbeat_interval` in the data field.
 

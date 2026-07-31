@@ -1,0 +1,39 @@
+name: lantern
+
+services:
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    init: true
+    env_file:
+      - .env
+    environment:
+      NODE_ENV: production
+    ports:
+      - "${LANTERN_PORT}:3003"
+    volumes:
+      - ./src/config.toml:/app/src/config.toml:ro
+      - lantern_logs:/app/logs
+      - lantern_backups:/app/database-backups
+
+  caddy:
+    image: caddy:2.9-alpine
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      api:
+        condition: service_started
+
+volumes:
+  lantern_logs:
+  lantern_backups:
+  caddy_data:
+  caddy_config:
