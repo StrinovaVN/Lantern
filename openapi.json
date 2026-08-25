@@ -27,6 +27,10 @@
     {
       "name": "Storage",
       "description": "Per-user key-value storage."
+    },
+    {
+      "name": "Moderation",
+      "description": "Current moderation state in the base Discord guild."
     }
   ],
   "paths": {
@@ -354,6 +358,62 @@
           }
         }
       }
+    },
+    "/api/v2/bans": {
+      "get": {
+        "operationId": "getBans",
+        "summary": "Get banned users",
+        "description": "Fetches the current ban list from the base Discord guild.",
+        "tags": [
+          "Moderation"
+        ],
+        "responses": {
+          "200": {
+            "description": "Ban list retrieved successfully.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/BanData"
+                  }
+                }
+              }
+            }
+          },
+          "503": {
+            "$ref": "#/components/responses/ServiceUnavailable"
+          }
+        }
+      }
+    },
+    "/api/v2/timeouts": {
+      "get": {
+        "operationId": "getTimeouts",
+        "summary": "Get timed-out users",
+        "description": "Fetches users with an active communication timeout in the base Discord guild.",
+        "tags": [
+          "Moderation"
+        ],
+        "responses": {
+          "200": {
+            "description": "Timeout list retrieved successfully.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/TimeoutData"
+                  }
+                }
+              }
+            }
+          },
+          "503": {
+            "$ref": "#/components/responses/ServiceUnavailable"
+          }
+        }
+      }
     }
   },
   "components": {
@@ -472,6 +532,88 @@
         "type": "object",
         "description": "Current Discord data for a monitored user.",
         "additionalProperties": true
+      },
+      "ModerationUser": {
+        "type": "object",
+        "required": [
+          "id",
+          "username",
+          "global_name",
+          "avatar_url",
+          "display_avatar_url",
+          "bot"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "username": {
+            "type": "string"
+          },
+          "global_name": {
+            "type": "string",
+            "nullable": true
+          },
+          "avatar_url": {
+            "type": "string",
+            "nullable": true
+          },
+          "display_avatar_url": {
+            "type": "string"
+          },
+          "bot": {
+            "type": "boolean"
+          }
+        }
+      },
+      "BanData": {
+        "type": "object",
+        "required": [
+          "user",
+          "reason"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "user": {
+            "$ref": "#/components/schemas/ModerationUser"
+          },
+          "reason": {
+            "type": "string",
+            "nullable": true
+          }
+        }
+      },
+      "TimeoutData": {
+        "type": "object",
+        "required": [
+          "user",
+          "timeout_until"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "user": {
+            "$ref": "#/components/schemas/ModerationUser"
+          },
+          "timeout_until": {
+            "type": "object",
+            "nullable": true,
+            "required": [
+              "unix",
+              "raw"
+            ],
+            "additionalProperties": false,
+            "properties": {
+              "unix": {
+                "type": "integer"
+              },
+              "raw": {
+                "type": "string",
+                "format": "date-time"
+              }
+            }
+          }
+        }
       },
       "StorageData": {
         "type": "object",

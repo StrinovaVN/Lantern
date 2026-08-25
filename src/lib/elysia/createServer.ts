@@ -59,7 +59,9 @@ async function createServer() {
           '/api/v1/users',
           '/api/v1/users/:user_id',
           '/api/v1/users/:user_id/storage',
-          '/api/v1/users/:user_id/storage/:key'
+          '/api/v1/users/:user_id/storage/:key',
+          '/api/v2/bans',
+          '/api/v2/timeouts'
         ]
       },
       documentation: swaggerSpec

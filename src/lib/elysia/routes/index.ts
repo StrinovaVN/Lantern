@@ -4,6 +4,7 @@ import usersRoute from '@/elysia/routes/api/v1/users';
 import userRoute from '@/elysia/routes/api/v1/users/[user_id]';
 import storageRoute from '@/elysia/routes/api/v1/users/[user_id]/storage';
 import storageKeyRoute from '@/elysia/routes/api/v1/users/[user_id]/storage/[key]';
+import moderationRoute from '@/elysia/routes/api/v2/moderation';
 import socketRoute from '@/elysia/routes/socket';
 
 const routes = new Elysia({ name: 'routes' })
@@ -22,6 +23,7 @@ const routes = new Elysia({ name: 'routes' })
   .use(userRoute)
   .use(storageRoute)
   .use(storageKeyRoute)
+  .use(moderationRoute)
   .use(socketRoute);
 
 export default routes;

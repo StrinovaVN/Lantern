@@ -2,7 +2,7 @@ import mongoose from 'mongoose';
 import { exec } from 'node:child_process';
 import { promisify } from 'node:util';
 import { existsSync, mkdirSync, readFile, createWriteStream } from 'node:fs';
-import archiver from 'archiver';
+import { ZipArchive } from 'archiver';
 import * as Discord from 'discord.js';
 
 const promisifiedExec = promisify(exec);
@@ -61,7 +61,7 @@ function generateBackupCommand(url: string, backupPath: string, exclude_collecti
 async function createZipBuffer(dirPath: string): Promise<Buffer> {
   return new Promise((resolve, reject) => {
     const output = createWriteStream(`${dirPath}.zip`) as unknown as NodeJS.WritableStream;
-    const archive = archiver('zip', { zlib: { level: 9 } });
+    const archive = new ZipArchive({ zlib: { level: 9 } });
 
     output.on('close', () => {
       readFile(`${dirPath}.zip`, (error, data) => {
