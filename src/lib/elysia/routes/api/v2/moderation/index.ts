@@ -13,6 +13,11 @@ function createUserData(user: User) {
 }
 
 const moderationRoute = new Elysia({ name: 'moderation-route' })
+  .onBeforeHandle(({ request, status }) => {
+    if (request.headers.get('x-api-key') !== process.env.API_KEY) {
+      return status(401, { error: 'Unauthorized.' });
+    }
+  })
   .get('/api/v2/bans', async ({ status }) => {
     const guild = client.guilds.cache.get(config.base_guild_id);
     if (!guild) return status(503, { error: 'Base guild is not available.' });

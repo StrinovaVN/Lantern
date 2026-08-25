@@ -367,6 +367,11 @@
         "tags": [
           "Moderation"
         ],
+        "security": [
+          {
+            "ApiKeyAuth": []
+          }
+        ],
         "responses": {
           "200": {
             "description": "Ban list retrieved successfully.",
@@ -380,6 +385,9 @@
                 }
               }
             }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
           },
           "503": {
             "$ref": "#/components/responses/ServiceUnavailable"
@@ -395,6 +403,11 @@
         "tags": [
           "Moderation"
         ],
+        "security": [
+          {
+            "ApiKeyAuth": []
+          }
+        ],
         "responses": {
           "200": {
             "description": "Timeout list retrieved successfully.",
@@ -409,6 +422,9 @@
               }
             }
           },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
           "503": {
             "$ref": "#/components/responses/ServiceUnavailable"
           }
@@ -418,6 +434,12 @@
   },
   "components": {
     "securitySchemes": {
+      "ApiKeyAuth": {
+        "type": "apiKey",
+        "name": "x-api-key",
+        "in": "header",
+        "description": "API key required by API v2 endpoints."
+      },
       "KvTokenAuth": {
         "type": "apiKey",
         "name": "Authorization",

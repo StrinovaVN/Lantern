@@ -93,6 +93,7 @@ declare global {
       DISCORD_BOT_TOKEN: string;
       MONGODB_URI: string;
       MONGODB_NAME: string;
+      API_KEY: string;
       KV_TOKEN_ENCRYPTION_SECRET: string;
     }
   }
