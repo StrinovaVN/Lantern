@@ -1,4 +1,4 @@
-FROM oven/bun:1.3.13-alpine AS builder
+FROM oven/bun:1.4.0-alpine AS builder
 
 WORKDIR /app
 
@@ -12,7 +12,7 @@ COPY src ./src
 RUN bun run build
 
 
-FROM oven/bun:1.3.13-alpine AS production
+FROM oven/bun:1.4.0-alpine AS production
 
 WORKDIR /app
 
@@ -29,7 +29,7 @@ COPY --from=builder /app/src/config.toml ./src/config.toml
 
 RUN mkdir -p logs database-backups
 
-EXPOSE 3003
+EXPOSE 3000
 
 CMD ["bun", "dist/index.js"]
 

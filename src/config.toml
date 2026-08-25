@@ -1,6 +1,6 @@
 bypass_command_permissions_check = ['755650648397185104']
 
-base_guild_id = '1030094660628140083'
+base_guild_id = '1274356657929064594'
 max_bulk_get_users_size = 50
 
 [server]

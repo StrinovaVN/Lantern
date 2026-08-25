@@ -11,7 +11,7 @@ lantern.strinovavn.com {
 	}
 
 	handle @cloudflare {
-		reverse_proxy http://api:3003 {
+		reverse_proxy http://127.0.0.1:3000 {
 			header_up Host {http.reverse_proxy.upstream.hostport}
 			header_up X-Forwarded-For {http.request.header.CF-Connecting-IP}
 		}
